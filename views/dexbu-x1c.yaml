@@ -66,13 +66,6 @@ sections:
               border: none !important;
               box-shadow: none !important;
             }
-      - type: custom:ha-bambulab-spool-card
-        spool: 81289ec735dc7e27e23827d412174d94
-        show_info_bar: true
-        subtitle: External spool
-        show_type: true
-        spool_anim_reflection: true
-        spool_anim_wiggle: true
       # Only rendered while the camera actually streams.
       - type: conditional
         conditions:
@@ -140,6 +133,13 @@ sections:
         grid_options:
           columns: 12
           rows: auto
+      - type: custom:ha-bambulab-spool-card
+        spool: 81289ec735dc7e27e23827d412174d94
+        show_info_bar: true
+        subtitle: External spool
+        show_type: true
+        spool_anim_reflection: true
+        spool_anim_wiggle: true
 
   - type: grid
     visibility:
