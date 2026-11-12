@@ -44,6 +44,18 @@ sections:
           show_state: false
           tap_action:
             action: more-info
+      # The printer reports rtsp_url "disable" until LAN Mode Liveview is on,
+      # and the integration keeps the camera unavailable until then.
+      - type: markdown
+        visibility:
+          - condition: state
+            entity: camera.dexbu_x1c_camera
+            state: unavailable
+        content: |
+          <ha-alert alert-type="info" title="Camera off">
+          Turn on <b>LAN Mode Liveview</b> on the X1C's screen
+          (Settings → Network). The live feed appears here once it streams.
+          </ha-alert>
 
   - type: grid
     visibility:
