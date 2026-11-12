@@ -139,6 +139,16 @@ All cards come from ha-bambulab's bundled card pack (v0.8.1 with integration v2.
 - The update entity can stay `in_progress: true` at 100% after an update finishes, so the firmware-updating helper also requires a pending version or a percentage below 100.
 - No `fapro:` icons. `thomasloven/hass-fontawesome` was removed upstream (deprecated), so the tab uses only `mdi:` icons and the bundled cards.
 
+**A1 mini tab notes:**
+
+| Decision | Why |
+|---|---|
+| Takes the old Prusa Mini tab's slot (`replaces: prusa-mini`) | The A1 mini replaced that printer, so it keeps its place and visibility. |
+| Entity IDs are `*.dexbu_a1_mini_*` (renamed in the entity registry) | The integration's defaults embed the printer serial, which must stay out of this public repo. The cards find entities by translation key, so the rename doesn't affect them. |
+| Outlet and cabinet lights reuse `switch.prusa_mini_power` and `switch.prusa_mini_cabinet_lights` | Assumes the A1 mini is plugged into the Prusa's old outlet. Rename them in HA if you want, then update the view. |
+| Only a spool card, no AMS card | The A1 mini has no AMS lite, only the external spool. |
+| The firmware-updating helper finds the update entity by device ID | ha-bambulab only creates an update entity when **Enable firmware update** is on in the printer's integration options, and for the A1 mini it's off. Until then the helper stays `off`. Turn the option on (Settings → Devices & services → Bambu Lab → the A1 mini entry → Configure) and update mode works with no edits. That also removes `binary_sensor.dexbu_a1_mini_firmware`, so swap its tile for the update entity. |
+
 ## WLED stability (X1C chamber lights)
 
 **Symptom:** HA shows the WLED light as unavailable or flapping, while the WLED phone app "works".

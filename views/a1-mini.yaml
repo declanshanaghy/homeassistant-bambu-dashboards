@@ -1,0 +1,318 @@
+type: sections
+max_columns: 4
+title: A1 Mini
+path: a1-mini
+icon: mdi:printer-3d
+theme: Fluent Orange
+# Takes over the dead Prusa Mini tab's slot (position and visibility).
+replaces: prusa-mini
+cards: []
+sections:
+  # --- Normal mode: every section is hidden while firmware is flashing. -------
+  - type: grid
+    visibility:
+      - condition: state
+        entity: binary_sensor.dexbu_a1_mini_firmware_updating
+        state: "off"
+    cards:
+      - type: heading
+        heading: Printer
+        heading_style: title
+        icon: mdi:printer-3d
+      # A1 mini graphic with live temperatures, fans, progress, cover image and
+      # the chamber light. No custom_power: the outlet stays on its own guarded
+      # button below.
+      - type: custom:ha-bambulab-print_status-card
+        printer: 44f63bf1b9d4760777f583ff2857bb35
+        style: graphic
+        card_mod:
+          style: |
+            ha-card {
+              background: none !important;
+              border: none !important;
+              box-shadow: none !important;
+            }
+      # Only rendered while the camera actually streams.
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: camera.dexbu_a1_mini_camera
+            state_not: unavailable
+        card:
+          type: picture-entity
+          entity: camera.dexbu_a1_mini_camera
+          camera_view: live
+          show_name: false
+          show_state: false
+          tap_action:
+            action: more-info
+
+  - type: grid
+    visibility:
+      - condition: state
+        entity: binary_sensor.dexbu_a1_mini_firmware_updating
+        state: "off"
+    cards:
+      - type: heading
+        heading: Filament
+        heading_style: title
+        icon: mdi:printer-3d-nozzle
+      # The A1 mini has no AMS lite, only the external spool.
+      - type: custom:ha-bambulab-spool-card
+        spool: d7b70cbc780dca9eb5739651f41febea
+        subtitle: External spool
+        show_type: true
+        show_info_bar: true
+        spool_anim_reflection: true
+        spool_anim_wiggle: true
+        card_mod:
+          style: |
+            ha-card {
+              background: none !important;
+              border: none !important;
+              box-shadow: none !important;
+            }
+
+  - type: grid
+    visibility:
+      - condition: state
+        entity: binary_sensor.dexbu_a1_mini_firmware_updating
+        state: "off"
+    cards:
+      - type: heading
+        heading: Status
+        heading_style: title
+        icon: mdi:information-outline
+      - type: tile
+        entity: sensor.dexbu_a1_mini_print_status
+        name: Status
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.dexbu_a1_mini_current_stage
+        name: Stage
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.dexbu_a1_mini_task_name
+        name: Task
+        grid_options:
+          columns: 12
+      - type: tile
+        entity: sensor.dexbu_a1_mini_print_progress
+        name: Progress
+        grid_options:
+          columns: 6
+      # Read-only: the speed can't be changed with encrypted MQTT.
+      - type: tile
+        entity: sensor.dexbu_a1_mini_speed_profile
+        name: Speed profile
+        icon: mdi:speedometer
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.dexbu_a1_mini_remaining_time
+        name: Remaining
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.dexbu_a1_mini_end_time
+        name: Ends
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.dexbu_a1_mini_current_layer
+        name: Layer
+        icon: mdi:layers-outline
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.dexbu_a1_mini_total_layer_count
+        name: Total layers
+        icon: mdi:layers-triple-outline
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.dexbu_a1_mini_nozzle_temperature
+        name: Nozzle
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.dexbu_a1_mini_bed_temperature
+        name: Bed
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: binary_sensor.dexbu_a1_mini_hms_errors
+        name: HMS errors
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: binary_sensor.dexbu_a1_mini_print_error
+        name: Print error
+        grid_options:
+          columns: 6
+      # "Update available". ha-bambulab removes this entity when the
+      # integration's firmware-update option is enabled; replace it with the
+      # update entity then (check will flag it).
+      - type: tile
+        entity: binary_sensor.dexbu_a1_mini_firmware
+        name: Firmware update
+        grid_options:
+          columns: 12
+
+  - type: grid
+    visibility:
+      - condition: state
+        entity: binary_sensor.dexbu_a1_mini_firmware_updating
+        state: "off"
+    cards:
+      - type: heading
+        heading: Power & lights
+        heading_style: title
+        icon: mdi:power
+      # The A1 mini took over the Prusa Mini's outlet and cabinet lights; the
+      # entity IDs keep their old names.
+      - type: custom:button-card
+        entity: switch.prusa_mini_power
+        name: Dexbu A1 Mini
+        icon: mdi:power
+        show_icon: true
+        show_state: false
+        layout: icon_name
+        # Second safeguard: no toggle while firmware is flashing, even if this
+        # section were somehow visible.
+        tap_action:
+          action: >-
+            [[[ return states['binary_sensor.dexbu_a1_mini_firmware_updating']?.state === 'on' ? 'none' : 'toggle'; ]]]
+        confirmation:
+          text: Toggle Dexbu A1 Mini Power?
+        state:
+          - value: "on"
+            color: green
+          - value: "off"
+            color: grey
+        styles:
+          grid:
+            - grid-template-columns: 20% 1fr 20%
+          icon:
+            - width: 65px
+            - padding-left: 20px
+          name:
+            - text-wrap: balance
+            - font-size: 1.4em
+        card_mod:
+          style: |
+            ha-card {
+              background: rgba(0,0,0,0);
+              border: none;
+              box-shadow: none !important;
+            }
+      - type: tile
+        entity: light.dexbu_a1_mini_chamber_light
+        name: Chamber light
+        grid_options:
+          columns: 12
+      - type: custom:mushroom-light-card
+        entity: switch.prusa_mini_cabinet_lights
+        name: Cabinet lights
+      - type: custom:mushroom-light-card
+        entity: light.office_dimmer
+        show_brightness_control: true
+        layout: horizontal
+
+  # --- Firmware-update mode: the only section shown while flashing. ----------
+  # There is no update entity to name until ha-bambulab's firmware-update option
+  # is enabled for the A1 mini, so these cards find it by the printer's device
+  # ID, the same way the helper does.
+  - type: grid
+    column_span: 2
+    visibility:
+      - condition: state
+        entity: binary_sensor.dexbu_a1_mini_firmware_updating
+        state: "on"
+    cards:
+      - type: custom:button-card
+        entity: binary_sensor.dexbu_a1_mini_firmware_updating
+        show_icon: true
+        icon: mdi:alert-octagon
+        show_name: true
+        show_state: false
+        show_label: true
+        name: Firmware updating — do not power off
+        label: >-
+          [[[ const id = Object.keys(hass.entities).find((e) => e.startsWith('update.') && hass.entities[e].device_id === '44f63bf1b9d4760777f583ff2857bb35'); const a = (id && states[id]?.attributes) || {}; return `${a.installed_version ?? '?'} → ${a.latest_version ?? '?'}`; ]]]
+        tap_action:
+          action: none
+        hold_action:
+          action: none
+        layout: icon_name_state2nd
+        styles:
+          card:
+            - background: rgba(255, 152, 0, 0.18)
+            - border: 2px solid rgb(255, 152, 0)
+            - padding: 12px
+          icon:
+            - color: rgb(255, 152, 0)
+            - width: 48px
+          name:
+            - font-size: 1.3em
+            - font-weight: bold
+            - white-space: normal
+          label:
+            - font-size: 1.1em
+            - font-family: monospace
+        grid_options:
+          columns: 12
+      - type: custom:button-card
+        entity: binary_sensor.dexbu_a1_mini_firmware_updating
+        show_icon: false
+        show_state: false
+        show_name: true
+        name: >-
+          [[[ const id = Object.keys(hass.entities).find((e) => e.startsWith('update.') && hass.entities[e].device_id === '44f63bf1b9d4760777f583ff2857bb35'); const p = id && states[id]?.attributes?.update_percentage; return typeof p === 'number' ? `Progress ${p}%` : 'Progress unknown'; ]]]
+        tap_action:
+          action: none
+        hold_action:
+          action: none
+        styles:
+          card:
+            - height: 48px
+            - background: >-
+                [[[ const id = Object.keys(hass.entities).find((e) => e.startsWith('update.') && hass.entities[e].device_id === '44f63bf1b9d4760777f583ff2857bb35'); const p = Number(id && states[id]?.attributes?.update_percentage) || 0; return `linear-gradient(90deg, rgb(255,152,0) ${p}%, rgba(127,127,127,0.25) ${p}%)`; ]]]
+          name:
+            - font-weight: bold
+            - color: white
+            - text-shadow: 0 0 3px black
+        grid_options:
+          columns: 12
+      # The outlet, locked: no actions at all, lock icon, greyed out.
+      - type: custom:button-card
+        entity: switch.prusa_mini_power
+        name: Dexbu A1 Mini power locked
+        icon: mdi:lock
+        show_icon: true
+        show_state: true
+        layout: icon_name_state2nd
+        color_type: icon
+        color: grey
+        state:
+          - value: "on"
+            icon: mdi:lock
+            color: grey
+          - value: "off"
+            icon: mdi:lock
+            color: grey
+        tap_action:
+          action: none
+        hold_action:
+          action: none
+        double_tap_action:
+          action: none
+        styles:
+          card:
+            - opacity: "0.5"
+            - pointer-events: none
+            - filter: grayscale(1)
+        grid_options:
+          columns: 12

@@ -1,0 +1,20 @@
+# Template binary sensor (Settings → Devices & services → Helpers → Template →
+# Binary sensor). It is "on" only while the A1 mini is actually flashing firmware.
+#
+# The A1 mini's config entry has ha-bambulab's "Enable firmware update" option
+# off, so there is no update entity yet, only binary_sensor.*_firmware ("update
+# available", which carries no progress or versions). Instead of naming an
+# entity that doesn't exist, the template finds the printer device's update
+# entity by device ID. It stays "off" until that option is turned on, and then
+# works with no edits. Iterating states.update also re-renders it when the
+# entity appears.
+#
+# Why not in_progress alone: the X1C's update entity kept reporting
+# in_progress: true at 100% with installed == latest after an update finished,
+# which would lock the tab forever. So it also needs a pending update, a
+# version mismatch, or an unfinished percentage.
+entity_id: binary_sensor.dexbu_a1_mini_firmware_updating
+name: Dexbu A1 Mini firmware updating
+device_class: running
+state: >-
+  {% set u = states.update | selectattr('entity_id', 'in', device_entities('44f63bf1b9d4760777f583ff2857bb35')) | list | first | default(none) %}{% set pct = u.attributes.update_percentage if u else none %}{{ u is not none and u.attributes.in_progress == true and (u.state == 'on' or u.attributes.installed_version != u.attributes.latest_version or (pct is number and pct < 100)) }}
