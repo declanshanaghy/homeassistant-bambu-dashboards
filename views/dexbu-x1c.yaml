@@ -54,7 +54,7 @@ sections:
           columns: 12
           rows: auto
       # Printer graphic with live temperatures, fans, door, progress, cover image
-      # and the Bambu chamber light. No custom_power: the outlet stays on its own
+      # and its built-in chamber-light overlay. No custom_power: the outlet stays on its own
       # guarded button below.
       - type: custom:ha-bambulab-print_status-card
         printer: 0fc3ee411ff891723ef28d515f77fe5d
@@ -282,13 +282,8 @@ sections:
               border: none;
               box-shadow: none !important;
             }
-      - type: tile
-        entity: light.dexbu_x1c_chamber_light
-        name: Chamber light
-        grid_options:
-          columns: 12
-      # Built-in tiles with features instead of mushroom cards: they share the
-      # chamber light's full-width grid sizing, and each select gets its own
+      # Built-in tiles with features instead of mushroom cards: full-width grid
+      # sizing like the other tiles here, and each select gets its own
       # row so long palette / preset names don't clip in a one-column section.
       - type: tile
         entity: light.dexbu_x1c_lights
