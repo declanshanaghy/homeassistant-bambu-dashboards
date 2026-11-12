@@ -38,6 +38,17 @@ sections:
         grid_options:
           columns: 12
           rows: auto
+      # The Mars lives in the garage; light the room to check the vat or camera.
+      - type: tile
+        entity: switch.garage_lights
+        name: Garage light
+        icon: mdi:lightbulb
+        vertical: false
+        tap_action:
+          action: toggle
+        grid_options:
+          columns: 12
+          rows: 1
       - type: custom:button-card
         entity: sensor.garage_dexmars5u_percent_complete
         triggers_update:
