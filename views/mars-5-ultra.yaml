@@ -8,8 +8,10 @@
 # current_status == printing, resume while print_status == paused, stop in either.
 path: mars-5-ultra
 title: Mars 5 Ultra
-after: a1-mini
-icon: mdi:printer-3d
+# Sits after the Bambu pair (A1 mini, X1C).
+after: dexbu-x1c
+# Tab icon: a resin flask for the MSLA printer, distinct from the Bambu tabs.
+icon: mdi:flask-outline
 theme: Fluent Purple
 type: sections
 max_columns: 3
@@ -23,7 +25,7 @@ sections:
     cards:
       - type: heading
         heading: Mars 5 Ultra
-        icon: mdi:printer-3d
+        icon: mdi:flask-outline
         badges:
           - type: entity
             entity: sensor.garage_dexmars5u_print_status

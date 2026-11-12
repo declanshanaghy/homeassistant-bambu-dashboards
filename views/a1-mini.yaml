@@ -2,7 +2,9 @@ type: sections
 max_columns: 4
 title: A1 Mini
 path: a1-mini
-icon: mdi:printer-3d
+# Tab icon: MDI has no Bambu icons. A bare nozzle for the small open
+# bed-slinger, distinct from the X1C's boxed printer and the Mars's flask.
+icon: mdi:printer-3d-nozzle-outline
 theme: Fluent Orange
 # Takes over the dead Prusa Mini tab's slot (position and visibility).
 replaces: prusa-mini
@@ -18,7 +20,7 @@ sections:
       - type: heading
         heading: Printer
         heading_style: title
-        icon: mdi:printer-3d
+        icon: mdi:printer-3d-nozzle-outline
       # A1 mini graphic with live temperatures, fans, progress, cover image and
       # the chamber light. No custom_power: the outlet stays on its own guarded
       # button below.

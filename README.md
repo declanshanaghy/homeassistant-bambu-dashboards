@@ -61,7 +61,7 @@ If verification fails, the backup is the complete previous dashboard config. Sav
 | `path`, `title` | Required. `path` matches the file name and the URL of the tab. |
 | `type: sections` + `sections`, or `cards` | The view body, as in HA's raw config editor |
 | `replaces: <old-path>` | First deploy takes over the slot (position and visibility) of `<old-path>`. Later deploys match by `path`. It's an error if both views exist live. |
-| `after: <path>` | Where a **new** view is inserted. The target may be live or deployed in the same run. Ignored once the view exists, and a view with no `after` goes at the end. |
+| `after: <path>` | Pins the view right after `<path>`: a new view is inserted there, and a live one is moved there on every deploy (reported as `moved` if nothing else changed). The target may be live or deployed in the same run. A new view with no `after` goes at the end; a live one keeps its slot. |
 | `visible` | **Not allowed.** It holds HA user IDs. Deploy keeps whatever the live view has, so set it in the HA UI. |
 
 `after` and `replaces` are stripped before saving. IP addresses are rejected because the repo is public: use entity IDs and hostnames.

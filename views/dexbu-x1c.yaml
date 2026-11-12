@@ -2,8 +2,12 @@ type: sections
 max_columns: 4
 title: Dexbu X1c
 path: dexbu-x1c
+# Tab icon: MDI has no Bambu icons. The boxed printer-3d frame stands for the
+# enclosed CoreXY X1C, distinct from the A1 mini's nozzle and the Mars's flask.
 icon: mdi:printer-3d
 theme: Fluent Green
+# Keeps the two Bambu tabs side by side: A1 mini, X1C, then Mars 5 Ultra.
+after: a1-mini
 cards: []
 sections:
   # --- Normal mode: every section is hidden while firmware is flashing. -------

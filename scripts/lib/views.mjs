@@ -169,13 +169,14 @@ function stripPlacement(view) {
 }
 
 // Build the new Overview config. Returns { config, changes, errors } where each
-// change is { path, kind: 'unchanged'|'changed'|'replaced'|'inserted', before, after }.
+// change is { path, kind: 'unchanged'|'changed'|'moved'|'replaced'|'inserted', before, after }.
 export function merge(live, repoViews) {
   const errors = [];
   const views = [...(live.views ?? [])];
   const idx = (p) => views.findIndex((v) => v.path === p);
   const changes = [];
   const inserts = [];
+  const livePrev = new Map((live.views ?? []).map((v, i, all) => [v.path, all[i - 1]?.path]));
 
   for (const view of repoViews) {
     const next = stripPlacement(view);
@@ -202,9 +203,15 @@ export function merge(live, repoViews) {
     views[i] = next;
     if (kind === 'changed' && same(before, next)) kind = 'unchanged';
     changes.push({ path: view.path, from: before.path, kind, before, after: next });
+    // A live view with "after" is taken out and re-placed with the new ones below.
+    if (view.after) {
+      views.splice(i, 1);
+      inserts.push(next);
+    }
   }
 
-  // New views go after their "after" view (which may itself be new), else at the end.
+  // Views with "after" go after that view (which may itself be new or moved);
+  // new views without it go at the end.
   const afterOf = new Map(repoViews.map((v) => [v.path, v.after]));
   let queue = inserts;
   while (queue.length) {
@@ -219,13 +226,20 @@ export function merge(live, repoViews) {
         rest.push(next);
         continue;
       }
-      changes.push({ path: next.path, kind: 'inserted', before: null, after: next });
+      if (!changes.some((c) => c.path === next.path))
+        changes.push({ path: next.path, kind: 'inserted', before: null, after: next });
     }
     if (rest.length === queue.length) {
       for (const v of rest) errors.push(`${v.path}: "after: ${afterOf.get(v.path)}" is neither a live view nor deployed in this run`);
       break;
     }
     queue = rest;
+  }
+
+  // An otherwise unchanged view whose neighbour changed was moved: still save.
+  for (const c of changes) {
+    const i = idx(c.path);
+    if (c.kind === 'unchanged' && i >= 0 && views[i - 1]?.path !== livePrev.get(c.from)) c.kind = 'moved';
   }
 
   const paths = views.map((v) => v.path).filter(Boolean);
