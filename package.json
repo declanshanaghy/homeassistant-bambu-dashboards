@@ -1,0 +1,19 @@
+{
+  "name": "homeassistant-bambu-dashboards",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Home Assistant Overview dashboard tabs for 3D printers, kept as YAML and deployed over the WebSocket API",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "check:offline": "node scripts/check.mjs --offline",
+    "deploy": "node scripts/deploy.mjs",
+    "deploy:dry": "node scripts/deploy.mjs --dry-run"
+  },
+  "dependencies": {
+    "yaml": "2.9.1"
+  }
+}

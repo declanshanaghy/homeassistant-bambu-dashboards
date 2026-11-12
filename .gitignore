@@ -1,0 +1,9 @@
+# Live dashboard backups written by deploy (contain HA user IDs)
+backups/
+node_modules/
+.env
+.env.*
+# Raw API dumps (contain serials, IPs and user IDs)
+dump/
+dumps/
+*.dump.json
