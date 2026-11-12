@@ -2,23 +2,27 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
-// Local settings (HA_URL, HA_OP_REF, ...) come from the environment or a
-// gitignored `.env.local`, so account-specific values never reach the repo.
+// Local settings (HA_TOKEN, HA_URL, HA_OP_REF) come from the environment or
+// a gitignored `.env` (or `.env.local`), so account-specific values and the
+// token never reach the repo. Keeping HA_TOKEN in `.env` avoids a 1Password
+// prompt on every run; HA_OP_REF is only the fallback when it's absent.
 // Use 1Password vault/item IDs in HA_OP_REF if a name contains "(", which
 // `op` cannot parse in a secret reference.
-try {
-  for (const line of readFileSync(new URL('../../.env.local', import.meta.url), 'utf8').split('\n')) {
-    const m = line.match(/^\s*([A-Z_]+)\s*=\s*(.*?)\s*$/);
-    if (m && !(m[1] in process.env)) process.env[m[1]] = m[2];
-  }
-} catch {}
+for (const file of ['.env', '.env.local']) {
+  try {
+    for (const line of readFileSync(new URL(`../../${file}`, import.meta.url), 'utf8').split('\n')) {
+      const m = line.match(/^\s*([A-Z_]+)\s*=\s*(.*?)\s*$/);
+      if (m && !(m[1] in process.env)) process.env[m[1]] = m[2].replace(/^(['"])(.*)\1$/, '$2');
+    }
+  } catch {}
+}
 const OP_REF = process.env.HA_OP_REF;
 export const HA_URL = process.env.HA_URL ?? 'http://homeassistant.lan:8123';
 
 // The token is read at runtime and kept in memory only.
 function readToken() {
   if (process.env.HA_TOKEN) return process.env.HA_TOKEN.trim();
-  if (!OP_REF) throw new Error('set HA_TOKEN, or HA_OP_REF (an op:// reference) in the environment or .env.local');
+  if (!OP_REF) throw new Error('set HA_TOKEN, or HA_OP_REF (an op:// reference) in the environment or .env');
   try {
     return execFileSync('op', ['read', OP_REF], {
       encoding: 'utf8',

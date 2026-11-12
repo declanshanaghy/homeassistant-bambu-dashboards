@@ -35,7 +35,7 @@ flowchart LR
 | Helper files | Documentation of the template helpers the views depend on (created once in the HA UI). `check` verifies each helper's entity exists. |
 | `check` | Parses every file and validates its structure. It then collects every entity ID (see below), fetches `get_states` read-only, and fails on anything missing. It also dry-merges into the live Overview to catch duplicate paths and bad `after` / `replaces` targets. |
 | `deploy` | Runs `check`, fetches the live Overview, prints a diff, writes a timestamped backup, and saves. It then re-fetches and verifies that every unmanaged view and dashboard setting equals the backup. |
-| Token | Read at runtime from 1Password with `op read`, or from `HA_TOKEN`. It's held in memory only. Set `HA_OP_REF` (an `op://` reference) and optionally `HA_URL` in the environment or a gitignored `.env.local`, so account details stay out of the repo. Use vault/item **IDs** in the reference if a name contains `(`, which `op` can't parse. |
+| Token | `HA_TOKEN` in a gitignored `.env` (chmod 600), so runs never prompt 1Password. Without it, the scripts fall back to `op read` on `HA_OP_REF` (an `op://` reference, with vault/item **IDs** if a name contains `(`, which `op` can't parse). `HA_URL` is optional. The token is never committed or logged. |
 
 The views are tabs of the default dashboard (storage mode), not separate dashboards. That's why the scripts talk to `lovelace/config` with `url_path: null`. HA can only save the whole dashboard at once, so deploys must run one at a time.
 
