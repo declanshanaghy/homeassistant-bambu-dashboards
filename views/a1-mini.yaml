@@ -21,19 +21,6 @@ sections:
         heading: Printer
         heading_style: title
         icon: mdi:printer-3d-nozzle-outline
-      # A1 mini graphic with live temperatures, fans, progress, cover image and
-      # the chamber light. No custom_power: the outlet stays on its own guarded
-      # button below.
-      - type: custom:ha-bambulab-print_status-card
-        printer: 44f63bf1b9d4760777f583ff2857bb35
-        style: graphic
-        card_mod:
-          style: |
-            ha-card {
-              background: none !important;
-              border: none !important;
-              box-shadow: none !important;
-            }
       # Only rendered while the camera actually streams.
       - type: conditional
         conditions:
@@ -48,6 +35,19 @@ sections:
           show_state: false
           tap_action:
             action: more-info
+      # A1 mini graphic with live temperatures, fans, progress, cover image and
+      # the chamber light. No custom_power: the outlet stays on its own guarded
+      # button below.
+      - type: custom:ha-bambulab-print_status-card
+        printer: 44f63bf1b9d4760777f583ff2857bb35
+        style: graphic
+        card_mod:
+          style: |
+            ha-card {
+              background: none !important;
+              border: none !important;
+              box-shadow: none !important;
+            }
 
   - type: grid
     visibility:
