@@ -124,6 +124,18 @@ flowchart LR
 - **Whole-tab switch:** every normal section is visible only when the sensor is `off`, and the update section only when it's `on`. No half-stale mix.
 - **Two safeguards on power:** in update mode the outlet button is replaced by a locked variant. The normal button's tap action also resolves to `none` while updating.
 
+### Mars 5 Ultra tab
+
+| Aspect | How |
+|---|---|
+| Camera | `camera_view: auto` (periodic snapshots), never `live`. The printer serves at most **2 video streams** (`video_stream_max`), and the Elegoo app or slicer needs one. A live card on every open dashboard would lock them out. The Health section shows how many are in use. |
+| Controls | Pause, resume and stop each appear only while the integration marks that button available (pause: machine `printing`, hidden once the job is `pausing`/`paused`; resume: job `paused`). Pause and stop ask for confirmation. |
+| Times | The print-time sensors are minutes; the progress card shows them as h:mm, with the ETA from `end_time`. |
+| Release film | Gauge of `release_film` against `release_film_max` (yellow from 75 %, red from 90 %), so the film gets replaced before it tears. |
+| Errors | One card: green "No errors", or red with the `error_status_reason` / `print_error` value. |
+| Firmware mode | Same switch as the Bambu tabs, via its own helper. In v2.15.0 the update entity can't install or report progress (firmware is flashed from the printer's screen), so this mode stays dormant until the integration reports `in_progress`. |
+| Not shown | IP, URL and MAC sensors (public repo, and of no use on a dashboard). |
+
 ### Cards
 
 All cards come from ha-bambulab's bundled card pack (v0.8.1 with integration v2.4.0), so nothing extra is installed:

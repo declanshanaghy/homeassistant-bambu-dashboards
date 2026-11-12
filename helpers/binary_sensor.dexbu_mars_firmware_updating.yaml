@@ -1,0 +1,21 @@
+# Template helper (Settings -> Devices & services -> Helpers -> Template -> Binary sensor).
+# Created through the template config flow; this file documents it and lets
+# `check` verify it exists.
+#
+# Drives the Mars 5 Ultra tab's firmware-update mode. Section visibility can't
+# read attributes, so this turns the update entity's `in_progress` into a state.
+# `in_progress` alone isn't trusted (the X1C's reported true at 100 % after an
+# update finished), so it must coincide with real evidence of an install.
+#
+# Note: in elegoo_printer v2.15.0 the update entity only supports release
+# notes, not install or progress, so this stays off until the integration
+# reports progress. Firmware is flashed from the printer's own screen.
+entity_id: binary_sensor.dexbu_mars_firmware_updating
+name: dexbu_mars_firmware_updating
+type: template
+platform: binary_sensor
+state: >-
+  {% set u = 'update.garage_dexmars5u_firmware' %}{{ state_attr(u, 'in_progress') == true
+  and (is_state(u, 'on')
+  or state_attr(u, 'installed_version') != state_attr(u, 'latest_version')
+  or (state_attr(u, 'update_percentage') | float(100)) < 100) }}

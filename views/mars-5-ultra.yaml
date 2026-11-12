@@ -1,0 +1,439 @@
+# Elegoo Mars 5 Ultra (MSLA resin), elegoo_printer v2.15.0 over SDCP.
+# SDCP accepts local commands, so unlike the Bambu tabs this one has controls.
+# Status enums (from the integration source):
+#   current_status (machine): idle, printing, file_transferring, ..., stopping, stopped, recovery
+#   print_status (job): idle, homing, dropping, printing, lifting, pausing, paused,
+#                       stopping, stopped, complete, file_checking, ...
+# The integration's own button availability mirrors them: pause while
+# current_status == printing, resume while print_status == paused, stop in either.
+path: mars-5-ultra
+title: Mars 5 Ultra
+after: a1-mini
+icon: mdi:printer-3d
+theme: Fluent Purple
+type: sections
+max_columns: 3
+sections:
+  # --- Live: camera, progress, controls ---------------------------------------
+  - type: grid
+    visibility: &normal
+      - condition: state
+        entity: binary_sensor.dexbu_mars_firmware_updating
+        state: 'off'
+    cards:
+      - type: heading
+        heading: Mars 5 Ultra
+        icon: mdi:printer-3d
+        badges:
+          - type: entity
+            entity: sensor.garage_dexmars5u_print_status
+            show_state: true
+            show_icon: true
+      # Snapshots, not live: the printer allows only 2 video streams.
+      - type: picture-entity
+        entity: camera.garage_dexmars5u_chamber_camera
+        camera_view: auto
+        show_name: false
+        show_state: false
+        grid_options:
+          columns: 12
+          rows: auto
+      - type: custom:button-card
+        entity: sensor.garage_dexmars5u_percent_complete
+        triggers_update:
+          - sensor.garage_dexmars5u_file_name
+          - sensor.garage_dexmars5u_print_status
+          - sensor.garage_dexmars5u_current_layer
+          - sensor.garage_dexmars5u_total_layers
+          - sensor.garage_dexmars5u_remaining_layers
+          - sensor.garage_dexmars5u_current_print_time
+          - sensor.garage_dexmars5u_remaining_print_time
+          - sensor.garage_dexmars5u_total_print_time
+          - sensor.garage_dexmars5u_end_time
+        show_icon: false
+        show_state: false
+        show_name: false
+        tap_action:
+          action: more-info
+        grid_options:
+          columns: 12
+          rows: auto
+        custom_fields:
+          file: |
+            [[[
+              const f = states['sensor.garage_dexmars5u_file_name']?.state ?? '';
+              return ['unknown', 'unavailable', ''].includes(f) ? 'No file' : f.replace(/\.[^.]+$/, '');
+            ]]]
+          status: |
+            [[[
+              const s = states['sensor.garage_dexmars5u_print_status']?.state ?? 'unknown';
+              return s.replace(/_/g, ' ');
+            ]]]
+          pct: |
+            [[[
+              const p = Number(entity.state);
+              return Number.isFinite(p) ? `${Math.floor(p)}<span style="font-size:0.45em">%</span>` : '–';
+            ]]]
+          bar: |
+            [[[
+              const p = Math.max(0, Math.min(100, Number(entity.state) || 0));
+              return `<div style="height:14px;border-radius:7px;background:rgba(127,127,127,0.25);overflow:hidden">
+                <div style="width:${p}%;height:100%;border-radius:7px;background:var(--primary-color)"></div></div>`;
+            ]]]
+          layers: |
+            [[[
+              const v = (id) => states[`sensor.garage_dexmars5u_${id}`]?.state;
+              const cur = v('current_layer'), tot = v('total_layers'), left = v('remaining_layers');
+              if (!Number.isFinite(Number(tot)) || Number(tot) === 0) return 'Layers –';
+              return `Layer <b>${cur}</b> / ${tot} · ${left} left`;
+            ]]]
+          time: |
+            [[[
+              // The time sensors report minutes; show h:mm.
+              const hm = (id) => {
+                const m = Number(states[`sensor.garage_dexmars5u_${id}`]?.state);
+                if (!Number.isFinite(m)) return '–';
+                const t = Math.round(m);
+                return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
+              };
+              const end = new Date(states['sensor.garage_dexmars5u_end_time']?.state);
+              let eta = '–';
+              if (!isNaN(end)) {
+                const sameDay = end.toDateString() === new Date().toDateString();
+                eta = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                if (!sameDay) eta = `${end.toLocaleDateString([], { weekday: 'short' })} ${eta}`;
+              }
+              return `<b>${hm('remaining_print_time')}</b> left · ETA <b>${eta}</b><br>
+                <span style="opacity:0.7">Elapsed ${hm('current_print_time')} of ${hm('total_print_time')}</span>`;
+            ]]]
+        styles:
+          card:
+            - padding: 16px
+          grid:
+            - grid-template-areas: '"file pct" "status pct" "bar bar" "layers layers" "time time"'
+            - grid-template-columns: 1fr auto
+            - row-gap: 6px
+          custom_fields:
+            file:
+              - justify-self: start
+              - font-size: 1.2em
+              - font-weight: 600
+              - text-align: left
+            status:
+              - justify-self: start
+              - text-transform: capitalize
+              - opacity: '0.7'
+            pct:
+              - justify-self: end
+              - align-self: center
+              - font-size: 3.2em
+              - font-weight: 700
+              - line-height: '1'
+            bar:
+              - width: 100%
+            layers:
+              - justify-self: start
+            time:
+              - justify-self: start
+              - text-align: left
+              - line-height: '1.5'
+      # Controls: each shows only while the integration marks it available.
+      - type: custom:button-card
+        entity: button.garage_dexmars5u_pause_print
+        name: Pause
+        icon: mdi:pause
+        color: orange
+        tap_action:
+          action: call-service
+          service: button.press
+          service_data:
+            entity_id: button.garage_dexmars5u_pause_print
+          confirmation:
+            text: Pause the Mars 5 Ultra print?
+        layout: icon_name
+        styles: &ctrl_styles
+          card:
+            - height: 64px
+          name:
+            - font-size: 1.2em
+          icon:
+            - width: 32px
+        card_mod: &clear
+          style: |
+            ha-card {
+              background: none !important;
+              border: none !important;
+              box-shadow: none !important;
+            }
+        grid_options:
+          columns: 6
+          rows: auto
+        visibility:
+          - condition: state
+            entity: button.garage_dexmars5u_pause_print
+            state_not: unavailable
+          - condition: state
+            entity: sensor.garage_dexmars5u_print_status
+            state_not:
+              - pausing
+              - paused
+      - type: custom:button-card
+        entity: button.garage_dexmars5u_resume_print
+        name: Resume
+        icon: mdi:play
+        color: green
+        tap_action:
+          action: call-service
+          service: button.press
+          service_data:
+            entity_id: button.garage_dexmars5u_resume_print
+        layout: icon_name
+        styles: *ctrl_styles
+        card_mod: *clear
+        grid_options:
+          columns: 6
+          rows: auto
+        visibility:
+          - condition: state
+            entity: button.garage_dexmars5u_resume_print
+            state_not: unavailable
+      - type: custom:button-card
+        entity: button.garage_dexmars5u_stop_print
+        name: Stop
+        icon: mdi:stop
+        color: red
+        tap_action:
+          action: call-service
+          service: button.press
+          service_data:
+            entity_id: button.garage_dexmars5u_stop_print
+          confirmation:
+            text: Stop the Mars 5 Ultra print? It cannot be resumed.
+        layout: icon_name
+        styles: *ctrl_styles
+        card_mod: *clear
+        grid_options:
+          columns: 6
+          rows: auto
+        visibility:
+          - condition: state
+            entity: button.garage_dexmars5u_stop_print
+            state_not: unavailable
+
+  # --- Print: thumbnail, job status, errors -----------------------------------
+  - type: grid
+    visibility: *normal
+    cards:
+      - type: heading
+        heading: Print
+        icon: mdi:file-cad
+      - type: picture-entity
+        entity: image.garage_dexmars5u_cover_image
+        show_name: false
+        show_state: false
+        card_mod: *clear
+        grid_options:
+          columns: 6
+          rows: 4
+      - type: tile
+        entity: sensor.garage_dexmars5u_current_status
+        name: Machine
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.garage_dexmars5u_print_status
+        name: Job
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.garage_dexmars5u_begin_time
+        name: Started
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.garage_dexmars5u_end_time
+        name: Finishes
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.garage_dexmars5u_file_name
+        name: File
+        grid_options:
+          columns: 12
+      # Errors: green "no errors", or a red highlight naming the fault.
+      - type: custom:button-card
+        entity: sensor.garage_dexmars5u_error_status_reason
+        triggers_update:
+          - sensor.garage_dexmars5u_print_error
+        layout: icon_name
+        show_state: false
+        name: |
+          [[[
+            const reason = entity.state;
+            const perr = states['sensor.garage_dexmars5u_print_error']?.state;
+            const bad = [];
+            if (!['ok', 'unknown', 'unavailable'].includes(reason)) bad.push(reason.replace(/_/g, ' '));
+            if (perr && !['none', 'unknown', 'unavailable'].includes(perr)) bad.push(`file: ${perr.replace(/_/g, ' ')}`);
+            return bad.length ? `Error: ${bad.join(' · ')}` : 'No errors';
+          ]]]
+        icon: |
+          [[[
+            const ok = entity.state === 'ok' && states['sensor.garage_dexmars5u_print_error']?.state === 'none';
+            return ok ? 'mdi:check-circle' : 'mdi:alert-octagon';
+          ]]]
+        styles:
+          card:
+            - height: 56px
+            - background: |
+                [[[
+                  const ok = entity.state === 'ok' && states['sensor.garage_dexmars5u_print_error']?.state === 'none';
+                  return ok ? 'none' : 'rgba(219,68,55,0.25)';
+                ]]]
+            - border: |
+                [[[
+                  const ok = entity.state === 'ok' && states['sensor.garage_dexmars5u_print_error']?.state === 'none';
+                  return ok ? 'none' : '1px solid rgb(219,68,55)';
+                ]]]
+            - box-shadow: none
+          icon:
+            - width: 28px
+            - color: |
+                [[[
+                  const ok = entity.state === 'ok' && states['sensor.garage_dexmars5u_print_error']?.state === 'none';
+                  return ok ? 'var(--success-color, green)' : 'rgb(219,68,55)';
+                ]]]
+          name:
+            - text-transform: capitalize
+            - font-weight: 600
+        grid_options:
+          columns: 12
+          rows: auto
+
+  # --- Health: release film, UV LED, storage, camera streams, firmware -----------
+  - type: grid
+    visibility: *normal
+    cards:
+      - type: heading
+        heading: Health
+        icon: mdi:heart-pulse
+      # Gauge max and thresholds follow release_film_max (60000 lifts today):
+      # yellow from 75 %, red from 90 % of the film's rated life.
+      - type: custom:config-template-card
+        entities:
+          - sensor.garage_dexmars5u_release_film
+          - sensor.garage_dexmars5u_release_film_max
+        variables:
+          MAX: Number(states['sensor.garage_dexmars5u_release_film_max'].state) || 60000
+        card:
+          type: gauge
+          entity: sensor.garage_dexmars5u_release_film
+          name: Release film wear
+          min: 0
+          max: ${MAX}
+          needle: true
+          severity:
+            green: 0
+            yellow: ${Math.round(MAX * 0.75)}
+            red: ${Math.round(MAX * 0.9)}
+        grid_options:
+          columns: 12
+          rows: auto
+      - type: tile
+        entity: sensor.garage_dexmars5u_uv_led_temp
+        name: UV LED
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.garage_dexmars5u_remaining_memory
+        name: Free storage
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: binary_sensor.garage_dexmars5u_usb_disk_status
+        name: USB disk
+        grid_options:
+          columns: 6
+      - type: custom:button-card
+        entity: sensor.garage_dexmars5u_video_stream_connected
+        triggers_update:
+          - sensor.garage_dexmars5u_video_stream_max
+        icon: mdi:cctv
+        layout: icon_name_state2nd
+        show_state: true
+        name: Camera streams
+        state_display: |
+          [[[ return `${entity.state} of ${states['sensor.garage_dexmars5u_video_stream_max']?.state ?? '?'} in use`; ]]]
+        grid_options:
+          columns: 6
+          rows: 1
+      - type: tile
+        entity: update.garage_dexmars5u_firmware
+        name: Firmware
+        grid_options:
+          columns: 12
+      - type: custom:mini-graph-card
+        name: UV LED temperature
+        entities:
+          - sensor.garage_dexmars5u_uv_led_temp
+        hours_to_show: 12
+        points_per_hour: 6
+        line_width: 3
+        show:
+          labels: true
+        card_mod: *clear
+        grid_options:
+          columns: 12
+          rows: auto
+
+  # --- Firmware-update mode: replaces every section above ---------------------
+  - type: grid
+    visibility:
+      - condition: state
+        entity: binary_sensor.dexbu_mars_firmware_updating
+        state: 'on'
+    cards:
+      - type: markdown
+        content: |
+          <ha-alert alert-type="error" title="Firmware updating — do not power off">
+          The Mars 5 Ultra is flashing firmware
+          {{ state_attr('update.garage_dexmars5u_firmware', 'installed_version') }} →
+          {{ state_attr('update.garage_dexmars5u_firmware', 'latest_version') }}.
+          Controls are hidden until it finishes.
+          </ha-alert>
+        grid_options:
+          columns: 12
+          rows: auto
+      - type: custom:button-card
+        entity: update.garage_dexmars5u_firmware
+        show_icon: false
+        show_state: false
+        show_name: false
+        tap_action:
+          action: none
+        custom_fields:
+          bar: |
+            [[[
+              const raw = entity.attributes.update_percentage;
+              const p = Math.max(0, Math.min(100, Number(raw) || 0));
+              const label = raw == null ? 'Installing…' : `${Math.round(p)} %`;
+              return `<div style="margin-bottom:6px">${label}</div>
+                <div style="height:14px;border-radius:7px;background:rgba(127,127,127,0.25);overflow:hidden">
+                <div style="width:${p}%;height:100%;border-radius:7px;background:var(--error-color, red)"></div></div>`;
+            ]]]
+        styles:
+          card:
+            - padding: 16px
+          grid:
+            - grid-template-areas: '"bar"'
+          custom_fields:
+            bar:
+              - width: 100%
+              - text-align: left
+        grid_options:
+          columns: 12
+          rows: auto
+      - type: tile
+        entity: update.garage_dexmars5u_firmware
+        name: Firmware
+        grid_options:
+          columns: 12
