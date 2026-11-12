@@ -73,11 +73,13 @@ If verification fails, the backup is the complete previous dashboard config. Sav
 
 ## Prerequisites
 
-These are user steps, because they need HACS installs or printer access codes.
+These are user steps, because they need Marketplace installs or printer access codes.
+
+**Marketplace:** HA 2026.11 replaced HACS with the built-in **Marketplace**: sidebar → **Marketplace** (admin users only). Accept its warning once; installs and updates don't work until you do.
 
 ```mermaid
 flowchart LR
-  A[HA OS update and printer firmware updates finished] --> U[HACS: ha-bambulab v2.4.0 + Elegoo v2.15.0, restart]
+  A[HA OS update and printer firmware updates finished] --> U[Marketplace: ha-bambulab v2.4.0 + Elegoo v2.15.0, restart]
   U --> B[Add A1 mini]
   U --> C[Add Mars 5 Ultra]
   B & C --> D[npm run check]
@@ -85,8 +87,8 @@ flowchart LR
 
 | Step | Click path |
 |---|---|
-| Upgrade ha-bambulab to **v2.4.0** | HACS → search "Bambu Lab" → ⋮ → **Update information** (HACS caches 2.3.0 until refreshed) → ⋮ → **Redownload** → pick **v2.4.0** → Download. **Skip v2.3.0.** |
-| Install Elegoo **v2.15.0** | HACS → search "Elegoo" (if it isn't listed: ⋮ → Custom repositories → add `danielcherubini/elegoo-homeassistant`, type Integration) → open it → Download → pick **v2.15.0** (not the 2.16 beta) |
+| Upgrade ha-bambulab to **v2.4.0** | Marketplace → search "Bambu Lab" → open it → pick **v2.4.0** → install/update. **Skip v2.3.0.** |
+| Install Elegoo **v2.15.0** | Marketplace → search "Elegoo" (if it isn't listed, add the custom repository `danielcherubini/elegoo-homeassistant`, type Integration) → open it → pick **v2.15.0** (not the 2.16 beta) → install |
 | Restart once | Settings → System → ⋮ (top right) → Restart Home Assistant |
 | Add the A1 mini | Settings → Devices & services → Bambu Lab → **Add entry** → choose **LAN** → printer IP, serial and access code (both on the printer's screen, under Settings → Network) |
 | Add the Mars 5 Ultra | Settings → Devices & services → **Add integration** → Elegoo Printer → it's discovered on the LAN, or enter its IP |
@@ -103,7 +105,7 @@ flowchart LR
 | Fact | Consequence |
 |---|---|
 | X1C firmware 01.12 encrypts local MQTT, and Developer Mode is off | ha-bambulab can read status but cannot send commands |
-| The pause/resume/stop buttons, the camera and the speed select don't exist as entities | The tabs show status, AMS and spools only. Print control stays in Bambu Studio / Handy. |
+| The pause/resume/stop buttons and the speed select don't exist as entities | The tabs show status, AMS, spools and the camera (when it streams). Speed profile is a read-only tile. Print control stays in Bambu Studio / Handy. |
 | Turning Developer Mode on would restore control, but it disables cloud features | Not adopted; revisit if local control matters more |
 
 The Mars 5 Ultra (SDCP protocol) does accept local commands, so its tab keeps the integration's controls.
@@ -130,6 +132,13 @@ All cards come from ha-bambulab's bundled card pack (v0.8.1 with integration v2.
 - The spool card for external spools.
 - The print-status card where it renders without controls.
 
+**X1C tab notes:**
+- The print-status card (graphic style) replaced the hand-placed picture-elements header. It shows temperatures, fans, door, progress and the cover image, and its light is the Bambu chamber light. The enclosure WLED (`light.dexbu_x1c_lights`) has its own card in the lights section.
+- `camera.dexbu_x1c_camera` is shown only while it isn't `unavailable`.
+- The AMS humidity graphs use the Aqara `sensor.ams_2_pro_climate_*` sensors; the old `sensor.3d_printer_climate_*` ones are gone.
+- The update entity can stay `in_progress: true` at 100% after an update finishes, so the firmware-updating helper also requires a pending version or a percentage below 100.
+- No `fapro:` icons. `thomasloven/hass-fontawesome` was removed upstream (deprecated), so the tab uses only `mdi:` icons and the bundled cards.
+
 ## WLED stability (X1C chamber lights)
 
 **Symptom:** HA shows the WLED light as unavailable or flapping, while the WLED phone app "works".
@@ -152,7 +161,7 @@ All cards come from ha-bambulab's bundled card pack (v0.8.1 with integration v2.
 
 | Project | Why not (for now) |
 |---|---|
-| [hausch1ld/Universal-3D-Printer-card](https://github.com/hausch1ld/Universal-3D-Printer-card) | Printer-agnostic and reported working with the Elegoo integration (FDM). Not in the default HACS list, and resin is untested. Candidate for the Mars tab if the native cards look poor. |
+| [hausch1ld/Universal-3D-Printer-card](https://github.com/hausch1ld/Universal-3D-Printer-card) | Printer-agnostic and reported working with the Elegoo integration (FDM). Not in the default Marketplace list, and resin is untested. Candidate for the Mars tab if the native cards look poor. |
 | [drkpxl/printwatch-card](https://github.com/drkpxl/printwatch-card) | Bambu all-in-one, but it overlaps the official cards and assumes controls exist |
 | [WolfwithSword/Bambu-HomeAssistant-Flows](https://github.com/WolfwithSword/Bambu-HomeAssistant-Flows) | Needs Node-RED flows; heavier than the native cards |
 | [maziggy/bambuddy](https://github.com/maziggy/bambuddy) | A whole self-hosted Bambu server; separate project, out of scope |

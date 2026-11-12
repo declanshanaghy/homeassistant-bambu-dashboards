@@ -1,0 +1,354 @@
+type: sections
+max_columns: 4
+title: Dexbu X1c
+path: dexbu-x1c
+icon: mdi:printer-3d
+theme: Fluent Green
+cards: []
+sections:
+  # --- Normal mode: every section is hidden while firmware is flashing. -------
+  - type: grid
+    visibility:
+      - condition: state
+        entity: binary_sensor.dexbu_x1c_firmware_updating
+        state: "off"
+    cards:
+      - type: heading
+        heading: Printer
+        heading_style: title
+        icon: mdi:printer-3d
+      # Printer graphic with live temperatures, fans, door, progress, cover image
+      # and the Bambu chamber light. No custom_power: the outlet stays on its own
+      # guarded button below.
+      - type: custom:ha-bambulab-print_status-card
+        printer: 0fc3ee411ff891723ef28d515f77fe5d
+        style: graphic
+        card_mod:
+          style: |
+            ha-card {
+              background: none !important;
+              border: none !important;
+              box-shadow: none !important;
+            }
+      # Only rendered while the camera actually streams.
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: camera.dexbu_x1c_camera
+            state_not: unavailable
+        card:
+          type: picture-entity
+          entity: camera.dexbu_x1c_camera
+          camera_view: live
+          show_name: false
+          show_state: false
+          tap_action:
+            action: more-info
+
+  - type: grid
+    visibility:
+      - condition: state
+        entity: binary_sensor.dexbu_x1c_firmware_updating
+        state: "off"
+    cards:
+      - type: heading
+        heading: Filaments
+        heading_style: title
+        icon: mdi:printer-3d-nozzle
+      - type: custom:ha-bambulab-ams-graphic-card
+        ams: 9b59ac183623c9c383ade89f789d1bcc
+        show_info_bar: true
+        show_title: true
+        subtitle: AMS 2 Pro
+        show_labels: true
+        label_mode: type
+        show_empty_label: false
+      - type: custom:ha-bambulab-ams-graphic-card
+        ams: da11cab10ef4377744651a97d7303926
+        show_info_bar: true
+        show_title: true
+        subtitle: AMS 1
+        show_labels: true
+        label_mode: type
+        show_empty_label: false
+      - type: custom:ha-bambulab-spool-card
+        spool: 81289ec735dc7e27e23827d412174d94
+        show_info_bar: true
+        subtitle: External spool
+        show_type: true
+        spool_anim_reflection: true
+        spool_anim_wiggle: true
+
+  - type: grid
+    visibility:
+      - condition: state
+        entity: binary_sensor.dexbu_x1c_firmware_updating
+        state: "off"
+    cards:
+      - type: heading
+        heading: Status
+        heading_style: title
+        icon: mdi:information-outline
+      - type: tile
+        entity: sensor.dexbu_x1c_print_status
+        name: Status
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.dexbu_x1c_current_stage
+        name: Stage
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.dexbu_x1c_task_name
+        name: Task
+        grid_options:
+          columns: 12
+      - type: tile
+        entity: sensor.dexbu_x1c_print_progress
+        name: Progress
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.dexbu_x1c_speed_profile
+        name: Speed profile
+        icon: mdi:speedometer
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.dexbu_x1c_remaining_time
+        name: Remaining
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.dexbu_x1c_end_time
+        name: Ends
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.dexbu_x1c_current_layer
+        name: Layer
+        icon: mdi:layers-outline
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.dexbu_x1c_total_layer_count
+        name: Total layers
+        icon: mdi:layers-triple-outline
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: binary_sensor.dexbu_x1c_hms_errors
+        name: HMS errors
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.dexbu_x1c_wi_fi_signal
+        name: Wi-Fi
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.office_dexbu_x1c_ams_2_pro_status
+        name: AMS 2 Pro
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: sensor.office_dexbu_x1c_ams_1_status
+        name: AMS 1
+        grid_options:
+          columns: 6
+      - type: tile
+        entity: binary_sensor.dexbu_x1c_ams_2_pro_drying
+        name: AMS 2 Pro drying
+        icon: mdi:fan
+        grid_options:
+          columns: 6
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: binary_sensor.dexbu_x1c_ams_2_pro_drying
+            state: "on"
+        card:
+          type: tile
+          entity: sensor.dexbu_x1c_ams_2_pro_remaining_drying_time
+          name: Drying left
+        grid_options:
+          columns: 6
+
+  - type: grid
+    visibility:
+      - condition: state
+        entity: binary_sensor.dexbu_x1c_firmware_updating
+        state: "off"
+    cards:
+      - type: heading
+        heading: Power & lights
+        heading_style: title
+        icon: mdi:power
+      - type: custom:button-card
+        entity: switch.dexbu_x1c_outlet
+        name: Dexbu X1C
+        icon: mdi:power
+        show_icon: true
+        show_state: false
+        layout: icon_name
+        # Second safeguard: no toggle while firmware is flashing, even if this
+        # section were somehow visible.
+        tap_action:
+          action: >-
+            [[[ return states['binary_sensor.dexbu_x1c_firmware_updating']?.state === 'on' ? 'none' : 'toggle'; ]]]
+        confirmation:
+          text: Toggle Dexbu X1C Power?
+        state:
+          - value: "on"
+            color: green
+          - value: "off"
+            color: grey
+        styles:
+          grid:
+            - grid-template-columns: 20% 1fr 20%
+          icon:
+            - width: 65px
+            - padding-left: 20px
+          name:
+            - text-wrap: balance
+            - font-size: 1.4em
+        card_mod:
+          style: |
+            ha-card {
+              background: rgba(0,0,0,0);
+              border: none;
+              box-shadow: none !important;
+            }
+      - type: tile
+        entity: light.dexbu_x1c_chamber_light
+        name: Chamber light
+        grid_options:
+          columns: 12
+      - type: custom:mushroom-light-card
+        entity: light.dexbu_x1c_lights
+        name: Enclosure WLED
+        fill_container: false
+        layout: horizontal
+        show_brightness_control: true
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-select-card
+            entity: select.dexbu_x1c_lights_color_palette
+            name: Color
+          - type: custom:mushroom-select-card
+            entity: select.dexbu_x1c_lights_preset
+            name: Preset
+      - type: custom:mushroom-light-card
+        entity: light.office_dimmer
+        fill_container: false
+        layout: horizontal
+        show_brightness_control: true
+      - type: horizontal-stack
+        cards:
+          - type: sensor
+            entity: sensor.ams_2_pro_climate_humidity
+            name: AMS 2 Pro humidity
+            graph: line
+            detail: 2
+          - type: sensor
+            entity: sensor.ams_2_pro_climate_temperature
+            name: AMS 2 Pro temperature
+            graph: line
+            detail: 2
+        grid_options:
+          columns: 12
+          rows: auto
+
+  # --- Firmware-update mode: the only section shown while flashing. ---------
+  - type: grid
+    column_span: 2
+    visibility:
+      - condition: state
+        entity: binary_sensor.dexbu_x1c_firmware_updating
+        state: "on"
+    cards:
+      - type: custom:button-card
+        entity: update.dexbu_x1c_firmware_update
+        show_icon: true
+        icon: mdi:alert-octagon
+        show_name: true
+        show_state: false
+        show_label: true
+        name: Firmware updating — do not power off
+        label: >-
+          [[[ const a = entity?.attributes ?? {}; return `${a.installed_version ?? '?'} → ${a.latest_version ?? '?'}`; ]]]
+        tap_action:
+          action: more-info
+        hold_action:
+          action: none
+        layout: icon_name_state2nd
+        styles:
+          card:
+            - background: rgba(255, 152, 0, 0.18)
+            - border: 2px solid rgb(255, 152, 0)
+            - padding: 12px
+          icon:
+            - color: rgb(255, 152, 0)
+            - width: 48px
+          name:
+            - font-size: 1.3em
+            - font-weight: bold
+            - white-space: normal
+          label:
+            - font-size: 1.1em
+            - font-family: monospace
+        grid_options:
+          columns: 12
+      - type: custom:button-card
+        entity: update.dexbu_x1c_firmware_update
+        show_icon: false
+        show_state: false
+        show_name: true
+        name: >-
+          [[[ const p = entity?.attributes?.update_percentage; return typeof p === 'number' ? `Progress ${p}%` : 'Progress unknown'; ]]]
+        tap_action:
+          action: none
+        hold_action:
+          action: none
+        styles:
+          card:
+            - height: 48px
+            - background: >-
+                [[[ const p = Number(entity?.attributes?.update_percentage) || 0; return `linear-gradient(90deg, rgb(255,152,0) ${p}%, rgba(127,127,127,0.25) ${p}%)`; ]]]
+          name:
+            - font-weight: bold
+            - color: white
+            - text-shadow: 0 0 3px black
+        grid_options:
+          columns: 12
+      # The outlet, locked: no actions at all, lock icon, greyed out.
+      - type: custom:button-card
+        entity: switch.dexbu_x1c_outlet
+        name: Dexbu X1C power locked
+        icon: mdi:lock
+        show_icon: true
+        show_state: true
+        layout: icon_name_state2nd
+        color_type: icon
+        color: grey
+        state:
+          - value: "on"
+            icon: mdi:lock
+            color: grey
+          - value: "off"
+            icon: mdi:lock
+            color: grey
+        tap_action:
+          action: none
+        hold_action:
+          action: none
+        double_tap_action:
+          action: none
+        styles:
+          card:
+            - opacity: "0.5"
+            - pointer-events: none
+            - filter: grayscale(1)
+        grid_options:
+          columns: 12

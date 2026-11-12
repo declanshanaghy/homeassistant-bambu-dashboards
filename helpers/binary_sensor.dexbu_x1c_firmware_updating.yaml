@@ -1,0 +1,12 @@
+# Template binary sensor (Settings → Devices & services → Helpers → Template →
+# Binary sensor). It is "on" only while the X1C is actually flashing firmware.
+#
+# Why not in_progress alone: after the 01.12.01 update finished, the update
+# entity kept reporting in_progress: true at 100% with installed == latest,
+# which would lock the tab forever. So it also needs a pending version or an
+# unfinished percentage.
+entity_id: binary_sensor.dexbu_x1c_firmware_updating
+name: Dexbu X1C firmware updating
+device_class: running
+state: >-
+  {% set u = 'update.dexbu_x1c_firmware_update' %}{% set pct = state_attr(u, 'update_percentage') %}{{ state_attr(u, 'in_progress') == true and (state_attr(u, 'installed_version') != state_attr(u, 'latest_version') or (pct is number and pct < 100)) }}
