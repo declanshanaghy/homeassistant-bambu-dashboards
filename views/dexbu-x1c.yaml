@@ -17,6 +17,19 @@ sections:
         heading: Printer
         heading_style: title
         icon: mdi:printer-3d
+      - type: custom:ha-bambulab-ams-graphic-card
+        ams: 9b59ac183623c9c383ade89f789d1bcc
+        show_info_bar: true
+        show_title: true
+        subtitle: AMS 2 Pro
+        show_labels: true
+        label_mode: type
+        show_empty_label: false
+        # rows: auto lets the 700x360 art set the height from the column width,
+        # instead of the card's fixed 5-row minimum, so the tile is shorter.
+        grid_options:
+          columns: 12
+          rows: auto
       # Printer graphic with live temperatures, fans, door, progress, cover image
       # and the Bambu chamber light. No custom_power: the outlet stays on its own
       # guarded button below.
@@ -30,6 +43,13 @@ sections:
               border: none !important;
               box-shadow: none !important;
             }
+      - type: custom:ha-bambulab-spool-card
+        spool: 81289ec735dc7e27e23827d412174d94
+        show_info_bar: true
+        subtitle: External spool
+        show_type: true
+        spool_anim_reflection: true
+        spool_anim_wiggle: true
       # Only rendered while the camera actually streams.
       - type: conditional
         conditions:
@@ -68,14 +88,6 @@ sections:
         heading_style: title
         icon: mdi:printer-3d-nozzle
       - type: custom:ha-bambulab-ams-graphic-card
-        ams: 9b59ac183623c9c383ade89f789d1bcc
-        show_info_bar: true
-        show_title: true
-        subtitle: AMS 2 Pro
-        show_labels: true
-        label_mode: type
-        show_empty_label: false
-      - type: custom:ha-bambulab-ams-graphic-card
         ams: da11cab10ef4377744651a97d7303926
         show_info_bar: true
         show_title: true
@@ -83,13 +95,9 @@ sections:
         show_labels: true
         label_mode: type
         show_empty_label: false
-      - type: custom:ha-bambulab-spool-card
-        spool: 81289ec735dc7e27e23827d412174d94
-        show_info_bar: true
-        subtitle: External spool
-        show_type: true
-        spool_anim_reflection: true
-        spool_anim_wiggle: true
+        grid_options:
+          columns: 12
+          rows: auto
 
   - type: grid
     visibility:
