@@ -225,20 +225,32 @@ sections:
         name: Chamber light
         grid_options:
           columns: 12
-      - type: custom:mushroom-light-card
+      # Built-in tiles with features instead of mushroom cards: they share the
+      # chamber light's full-width grid sizing, and each select gets its own
+      # row so long palette / preset names don't clip in a one-column section.
+      - type: tile
         entity: light.dexbu_x1c_lights
         name: Enclosure WLED
-        fill_container: false
-        layout: horizontal
-        show_brightness_control: true
-      - type: horizontal-stack
-        cards:
-          - type: custom:mushroom-select-card
-            entity: select.dexbu_x1c_lights_color_palette
-            name: Color
-          - type: custom:mushroom-select-card
-            entity: select.dexbu_x1c_lights_preset
-            name: Preset
+        features:
+          - type: light-brightness
+        grid_options:
+          columns: 12
+      - type: tile
+        entity: select.dexbu_x1c_lights_color_palette
+        name: WLED palette
+        icon: mdi:palette
+        features:
+          - type: select-options
+        grid_options:
+          columns: 12
+      - type: tile
+        entity: select.dexbu_x1c_lights_preset
+        name: WLED preset
+        icon: mdi:playlist-star
+        features:
+          - type: select-options
+        grid_options:
+          columns: 12
       - type: custom:mushroom-light-card
         entity: light.office_dimmer
         fill_container: false
