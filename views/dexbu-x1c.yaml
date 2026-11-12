@@ -29,13 +29,13 @@ sections:
         icon: mdi:water-thermometer
         badges:
           - type: entity
-            entity: sensor.ams_2_pro_climate_humidity
+            entity: sensor.ams_2_pro_climate_temperature
             show_state: true
             show_icon: true
             tap_action:
               action: more-info
           - type: entity
-            entity: sensor.ams_2_pro_climate_temperature
+            entity: sensor.ams_2_pro_climate_humidity
             show_state: true
             show_icon: true
             tap_action:
@@ -111,13 +111,13 @@ sections:
         icon: mdi:water-thermometer
         badges:
           - type: entity
-            entity: sensor.ams_climate_humidity
+            entity: sensor.ams_climate_temperature
             show_state: true
             show_icon: true
             tap_action:
               action: more-info
           - type: entity
-            entity: sensor.ams_climate_temperature
+            entity: sensor.ams_climate_humidity
             show_state: true
             show_icon: true
             tap_action:
